@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>给最爱的老婆 🎂</title>
+    <style>
+        :root {
+            --bg-cream: #FFF5E1;
+            --pink: #FF9AA2;
+            --pink-deep: #FFB7B2;
+            --red: #D64161;
+            --dark-bg: #1a1a1a;
+            --text-dark: #5D4037;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'PingFang SC', serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+            transition: background-color 1s ease; /* 背景色过渡 */
+        }
+
+        /* --- 核心：丝滑转场幕布 --- */
+        .curtain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--pink);
+            z-index: 9999;
+            transform: translateY(100%);
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 5rem; color: white;
+        }
+        .curtain.active { transform: translateY(0); }
+        .curtain.up { transform: translateY(-100%); }
+
+        /* --- 舞台通用 --- */
+        .stage {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; transform: scale(0.9);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+        .stage.active { display: flex; opacity: 1; transform: scale(1); }
+
+        /* --- 第一幕：礼盒 --- */
+        .box-wrapper { position: relative; width: 200px; height: 200px; margin-top: 30px; cursor: pointer; }
+        .box-body {
+            position: absolute; bottom: 0; left: 10%; width: 80%; height: 70%;
+            background: var(--red); border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .box-body::before {
+            content:''; position: absolute; width: 25px; height: 100%;
+            background: var(--pink); left: 50%; transform: translateX(-50%);
+        }
+        .box-lid {
+            position: absolute; top: 15%; left: 5%; width: 90%; height: 25%;
+            background: #C03550; border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 2;
+            transition: all 0.5s ease-out; transform-origin: center bottom;
+        }
+        .box-lid::after {
+            content:''; position: absolute; height: 100%; width: 25px;
+            background: var(--pink); left: 50%; transform: translateX(-50%);
+        }
+        .box-bow {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 20px; background: var(--pink); border-radius: 10px; z-index: 3;
+        }
+        /* 动画 */
+        .shake { animation: shake-box 0.4s ease-in-out; }
+        .open .box-lid { transform: translateY(-120px) rotate(-20deg); opacity: 0; }
+        @keyframes shake-box {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        .hint-text { margin-top: 60px; color: #888; transition: color 0.3s; }
+
+        /* 彩带 */
+        .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        .confetti { position: absolute; width: 10px; height: 10px; top: 50%; left: 50%; opacity: 0; }
+        @keyframes pop { 0%{transform:scale(0); opacity:1;} 100%{transform:translate(var(--tx), var(--ty)) rotate(720deg) scale(1); opacity:0;} }
+
+        /* --- 第二幕：找草莓 --- */
+        .strawberry { position: absolute; font-size: 3rem; animation: float 2s infinite ease-in-out; }
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-15px);} }
+
+        /* --- 第三幕：蛋糕与仪式感 --- */
+        .cake-wrapper { position: relative; text-align: center; transition: opacity 1s; }
+        .cake-emoji { font-size: 8rem; position: relative; z-index: 1; }
+        
+        /* 优化的火苗 */
+        .flame-container {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 30px; height: 40px;
+            display: flex; justify-content: center;
+        }
+        .flame {
+            font-size: 3rem; 
+            filter: drop-shadow(0 0 15px orange) drop-shadow(0 0 5px yellow); /* 增加发光感 */
+            animation: flicker 0.1s infinite alternate;
+            transform-origin: bottom center;
+            transition: all 0.4s ease-in; /* 熄灭动画 */
+        }
+        
+        /* 烟雾 */
+        .smoke {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            font-size: 3rem; opacity: 0; 
+            color: rgba(255,255,255,0.8); /* 白烟 */
+            pointer-events: none;
+            transition: all 2.5s ease-out;
+        }
+        .smoke.rise { top: -120px; opacity: 0; transform: translateX(-50%) scale(1.5); }
+
+        /* 熄灭后的魔法文字 */
+        .magic-text {
+            position: absolute; top: 70%; left: 0; width: 100%;
+            text-align: center; color: white; font-size: 1.2rem;
+            opacity: 0; transition: opacity 1.5s;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* 熄灭时的背景变黑 */
+        body.dark-mode { background-color: #000 !important; }
+
+        @keyframes flicker { from{opacity:1; transform:scale(1);} to{opacity:0.9; transform:scale(1.1) skewX(2deg);} }
+        @keyframes puff { 0%{transform:scale(1);} 100%{transform:scale(0); opacity:0;} }
+
+        /* --- 第四幕：照片 --- */
+        #photo-bg { position: absolute; width: 100%; height: 100%; background: #111; z-index: -1; display: none; }
+        .polaroid {
+            background: white; padding: 15px 15px 45px 15px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.1); transform: rotate(-3deg); max-width: 85%;
+        }
+        .polaroid img { width: 100%; display: block; border-radius: 2px; }
+
+        /* --- 第五幕：信件 --- */
+        .letter-box {
+            width: 85%; height: 75vh; background: rgba(255,255,255,0.95);
+            padding: 25px; border-radius: 10px; overflow-y: auto; line-height: 1.8;
+        }
+
+        /* 音乐按钮 */
+        #music-btn { position: fixed; top: 20px; right: 20px; font-size: 24px; opacity: 0.5; z-index: 2000; background:rgba(255,255,255,0.5); padding:5px; border-radius:50%; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <div id="music-btn" onclick="toggleMusic()">🎵</div>
+    
+    <div class="curtain" id="curtain">❤️</div>
+    <div class="confetti-container" id="confetti-layer"></div>
+
+    <div class="stage active" id="stage1">
+        <h2 style="color:var(--red)">亲爱的，生日快乐！</h2>
+        <div class="box-wrapper" id="gift-box" onclick="handleBoxClick()">
+            <div class="box-lid"><div class="box-bow"></div></div>
+            <div class="box-body"></div>
+        </div>
+        <div class="hint-text" id="box-text">点击拆开礼物...</div>
+    </div>
+
+    <div class="stage" id="stage2">
+        <h3 style="margin-bottom:20px;">蛋糕还差点装饰...</h3>
+        <div style="width:100%; height:60vh; position:relative;" id="berry-area"></div>
+        <h2 style="color:var(--pink)" id="score">0 / 5</h2>
+    </div>
+
+    <div class="stage" id="stage3">
+        <div class="cake-wrapper" id="cake-part">
+            <h2 style="color:var(--red); margin-bottom:30px;" id="wish-title">✨ 许个愿吧 ✨</h2>
+            <div class="cake-emoji">
+                🎂
+                <div class="flame-container">
+                    <div class="flame" id="flame">🔥</div>
+                </div>
+                <div class="smoke" id="smoke">💨</div>
+            </div>
+            <p style="color:#888; margin-top:40px; font-size:0.9rem; transition:opacity 0.5s" id="mic-hint">
+                (闭上眼许愿，然后对着麦克风吹气)
+            </p>
+            <button onclick="blowOut()" id="manual-blow-btn" style="margin-top:20px; padding:8px 20px; background:var(--pink); border:none; color:white; border-radius:20px; font-size:0.8rem; opacity:0.8;">
+                无法吹气？点这里
+            </button>
+        </div>
+        <div class="magic-text" id="magic-msg">愿望已由晚风收信...<br>正在实现中 ✨</div>
+    </div>
+
+    <div class="stage" id="stage4">
+        <div id="photo-bg"></div>
+        <div class="polaroid" id="p-frame" onclick="nextPhoto()">
+            <img src="" id="p-img">
+            <div style="margin-top:15px; text-align:center; color:#333;" id="p-text"></div>
+        </div>
+        <p style="color:white; margin-top:30px; font-size:0.8rem; opacity:0.5;">(点击照片继续)</p>
+    </div>
+
+    <div class="stage" id="stage5">
+        <div class="letter-box">
+            <h3 style="color:var(--red); text-align:center; margin-bottom:20px;">💌 To 老婆</h3>
+            <p>亲爱的：</p>
+            <p>生日快乐！见字如面。</p>
+            <p>（在此处填入你的告白内容...）</p>
+            <p>刚才熄灯许愿的那几秒，我在心里默默发誓，要守护你所有的愿望。</p>
+            <p>希望你喜欢这个小小的网站。</p>
+            <p style="text-align:right; margin-top:30px;">—— 爱你的老公</p>
+            <hr style="margin:30px 0; border:0; border-top:1px dashed #ccc;">
+            <div style="text-align:center; color:#888; font-size:0.9rem;">
+                距离2025年12月9日还有：<br>
+                <span id="timer" style="color:var(--red); font-weight:bold; font-size:1.2rem;">计算中...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心配置 ---
+        const photos = [
+            { src: "img1.jpg", text: "这里写第一张照片的描述" },
+            { src: "img2.jpg", text: "这里写第二张照片的描述" },
+            { src: "img3.jpg", text: "这里写第三张照片的描述" }
+        ];
+
+        const bgm = document.getElementById('bgm');
+        let clickCount = 0;
+
+        // --- 丝滑转场 ---
+        function changeStage(nextId, callback) {
+            const curtain = document.getElementById('curtain');
+            curtain.classList.add('active');
+            setTimeout(() => {
+                document.querySelectorAll('.stage').forEach(el => el.classList.remove('active'));
+                document.getElementById(nextId).classList.add('active');
+                if(callback) callback();
+                curtain.classList.add('up');
+                setTimeout(() => curtain.classList.remove('active', 'up'), 800);
+            }, 800);
+        }
+
+        // --- 1. 礼盒逻辑 ---
+        function handleBoxClick() {
+            if(clickCount===0) bgm.play().catch(()=>{});
+            const box = document.getElementById('gift-box');
+            const txt = document.getElementById('box-text');
+            clickCount++;
+            
+            box.classList.remove('shake');
+            void box.offsetWidth;
+            box.classList.add('shake');
+            
+            if(clickCount===1) txt.innerText = "咦？好像卡住了？";
+            if(clickCount===2) { txt.innerText = "再用力一点点！"; txt.style.color="var(--pink)"; }
+            if(clickCount===3) txt.innerText = "听到声音了吗？";
+            if(clickCount===4) { txt.innerText = "马上就要开了！！"; txt.style.color="var(--red)"; txt.style.fontWeight="bold"; }
+            if(clickCount===5) {
+                box.classList.add('open');
+                txt.innerText = "生日快乐！！！";
+                fireConfetti();
+                setTimeout(() => changeStage('stage2', initGame), 2500);
+            }
+        }
+
+        function fireConfetti() {
+            const c = document.getElementById('confetti-layer');
+            const colors = ['#f00','#0f0','#00f','gold','pink'];
+            for(let i=0; i<60; i++){
+                const p = document.createElement('div');
+                p.className='confetti';
+                p.style.background = colors[Math.floor(Math.random()*colors.length)];
+                p.style.setProperty('--tx', (Math.random()-0.5)*window.innerWidth+'px');
+                p.style.setProperty('--ty', (Math.random()-1)*window.innerHeight+'px');
+                p.style.animation = 'pop 1.5s ease-out forwards';
+                c.appendChild(p);
+            }
+        }
+
+        // --- 2. 找草莓 ---
+        let score = 0;
+        function initGame() {
+            const area = document.getElementById('berry-area');
+            area.innerHTML = '';
+            for(let i=0; i<8; i++){
+                const b = document.createElement('div');
+                b.className='strawberry';
+                b.innerHTML='🍓';
+                b.style.left=Math.random()*85+'%'; b.style.top=Math.random()*85+'%';
+                b.onclick = function(){
+                    this.style.opacity=0; this.style.transform='scale(2)';
+                    setTimeout(()=>this.remove(),300);
+                    score++;
+                    document.getElementById('score').innerText = score+" / 5";
+                    if(score===5) setTimeout(() => changeStage('stage3', initMic), 1000);
+                }
+                area.appendChild(b);
+            }
+        }
+
+        // --- 3. 仪式感吹蜡烛 ---
+        let micActive = false;
+        function initMic() {
+            // 尝试开启麦克风
+            if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
+                    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+                    const src = ctx.createMediaStreamSource(stream);
+                    const ana = ctx.createAnalyser();
+                    ana.fftSize = 256;
+                    src.connect(ana);
+                    const data = new Uint8Array(ana.frequencyBinCount);
+                    micActive = true;
+                    
+                    function loop() {
+                        if(!micActive) return;
+                        ana.getByteFrequencyData(data);
+                        let sum=0; for(let x of data) sum+=x;
+                        if(sum/data.length > 40) { // 阈值
+                            blowOut();
+                            micActive = false;
+                        } else {
+                            requestAnimationFrame(loop);
+                        }
+                    }
+                    loop();
+                }).catch(e=>console.log('Mic denied'));
+            }
+        }
+
+        function blowOut() {
+            const flame = document.getElementById('flame');
+            if(flame.style.opacity === '0') return;
+
+            micActive = false; // 停止监听
+
+            // 1. 火苗动态：先缩小再消失
+            flame.style.transform = "scale(0.2)";
+            flame.style.opacity = "0";
+
+            // 2. 核心：瞬间关灯效果 (背景变黑)
+            document.body.classList.add('dark-mode'); 
+
+            // 3. 烟雾升起
+            document.getElementById('smoke').classList.add('rise');
+
+            // 4. 隐藏多余元素，只留烟雾和黑暗
+            document.getElementById('wish-title').style.opacity = 0;
+            document.getElementById('mic-hint').style.opacity = 0;
+            document.getElementById('manual-blow-btn').style.opacity = 0;
+
+            // 5. 显示魔法文字
+            setTimeout(() => {
+                document.getElementById('magic-msg').style.opacity = 1;
+            }, 1000);
+
+            // 6. 停留几秒后，丝滑切换到照片
+            setTimeout(() => {
+                // 此时背景已经是黑的，所以直接切换stage，不需要粉色幕布了，那样会刺眼
+                // 我们手动做一个暗色里的切换
+                document.getElementById('stage3').style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById('stage3').classList.remove('active');
+                    document.getElementById('stage4').classList.add('active');
+                    // 恢复stage4的透明度
+                    setTimeout(()=> document.getElementById('stage4').style.opacity=1, 100);
+                    
+                    initPhotos();
+                }, 1000);
+            }, 4500); // 可以在黑暗中多待一会
+        }
+
+        // --- 4. 照片墙 ---
+        let pIdx = 0;
+        function initPhotos() {
+            // 确保背景是黑的 (虽然body已经是dark-mode了，加个保险)
+            document.getElementById('photo-bg').style.display = 'block';
+            loadPhoto(0);
+        }
+        function loadPhoto(i) {
+            const f = document.getElementById('p-frame');
+            const img = document.getElementById('p-img');
+            const t = document.getElementById('p-text');
+            f.style.opacity = 0; f.style.transform = "scale(0.8) rotate(0deg)";
+            setTimeout(() => {
+                img.src = photos[i].src; t.innerText = photos[i].text;
+                f.style.opacity = 1; f.style.transform = `scale(1) rotate(${Math.random()*10-5}deg)`;
+            }, 500);
+        }
+        function nextPhoto() {
+            pIdx++;
+            if(pIdx < photos.length) loadPhoto(pIdx);
+            else {
+                // 去信件：恢复亮色背景，使用幕布转场
+                changeStage('stage5', ()=>{
+                    document.body.classList.remove('dark-mode');
+                    document.getElementById('photo-bg').style.display = 'none';
+                    startTimer();
+                });
+            }
+        }
+
+        // --- 5. 倒计时 ---
+        function startTimer() {
+            setInterval(() => {
+                const t = new Date("2025-12-09T00:00:00").getTime();
+                const now = new Date().getTime();
+                const diff = t - now;
+                if(diff<0) return;
+                const d = Math.floor(diff/(1000*60*60*24));
+                const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+                document.getElementById('timer').innerText = `${d}天 ${h}小时`;
+            }, 1000);
+        }
+        
+        function toggleMusic() {
+            if(bgm.paused) { bgm.play(); document.getElementById('music-btn').style.opacity=1; }
+            else { bgm.pause(); document.getElementById('music-btn').style.opacity=0.5; }
+        }
+    </script>
+</body>
+</html>
