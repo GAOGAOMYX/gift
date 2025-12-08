@@ -308,7 +308,7 @@
     <canvas id="fireworks-canvas"></canvas>
 
     <div class="stage active" id="stage1">
-        <h1 style="font-size:2rem; margin-bottom:50px; color:var(--accent-red); font-weight:normal; letter-spacing:2px; opacity:0; animation: fadeIn 2s forwards 1s;">神秘小盒子耶，老婆快打开它~</h1>
+        <h1 style="text-align:center; font-size:2rem; margin-bottom:50px; color:var(--accent-red); font-weight:normal; letter-spacing:2px; opacity:0; animation: fadeIn 2s forwards 1s;">神秘小盒子耶，<br>老婆快打开它~</h1>
         <div class="box-container" id="gift-box" onclick="clickBox()">
             <div class="box-lid"><div class="ribbon"></div><div class="box-bow"></div></div>
             <div class="box-body"><div class="ribbon"></div></div>
@@ -317,7 +317,7 @@
     </div>
 
     <div class="stage" id="stage2">
-        <h2 style="color:#555; font-weight:normal;">咦？奇怪怎么木有蛋糕糕，听说收集4个小草莓就可以召唤蛋糕哦</h2>
+        <h2 style="text-align:center; color:#555; font-weight:normal;">咦？奇怪怎么木有蛋糕糕，<br>听说收集4个小草莓就可以召唤蛋糕哦</h2>
         <p id="berry-msg" style="color:#888; margin-bottom:40px;">让我们一起收集小草莓召唤蛋糕糕吧。 🍓</p>
         <div style="width:100%; height:60vh; position:relative;" id="berry-area"></div>
         <div id="score" style="color:var(--accent-red); font-size:1.5rem;">0 / 5</div>
@@ -853,7 +853,7 @@
         }
 
         function startTimer(){ setInterval(() => { const diff = new Date("2026-12-09T00:00:00") - new Date(); if(diff<0) return; const d = Math.floor(diff/(1000*60*60*24)); const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)); document.getElementById('timer').innerText = `${d}天 ${h}小时`; }, 1000); }
-        function initMic() { if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => { const ctx = new AudioContext(); const ana = ctx.createAnalyser(); const src = ctx.createMediaStreamSource(stream); src.connect(ana); const data = new Uint8Array(ana.frequencyBinCount); function loop(){ ana.getByteFrequencyData(data); let s=0; data.forEach(v=>s+=v); if(s/data.length>30) blowOut(); else requestAnimationFrame(loop); } loop(); }).catch(()=>{}); } }
+        function initMic() { if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => { const ctx = new AudioContext(); const ana = ctx.createAnalyser(); const src = ctx.createMediaStreamSource(stream); src.connect(ana); const data = new Uint8Array(ana.frequencyBinCount); function loop(){ ana.getByteFrequencyData(data); let s=0; data.forEach(v=>s+=v); if(s/data.length>50) blowOut(); else requestAnimationFrame(loop); } loop(); }).catch(()=>{}); } }
         function toggleMusic(){bgm.paused?bgm.play():bgm.pause();}
         
         // CSS Animation styles appended for extra keyframes
