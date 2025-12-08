@@ -297,6 +297,38 @@
             pointer-events: none;
             opacity: 1;
         }
+
+        /* --- 新增：语音按钮样式 --- */
+        .voice-btn {
+            background: rgba(192, 53, 80, 0.1); 
+            border: 1px solid rgba(192, 53, 80, 0.4);
+            color: #C03550;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .voice-btn:hover {
+            background: rgba(192, 53, 80, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(192, 53, 80, 0.1);
+        }
+        /* 播放时的动效 */
+        .voice-btn.playing {
+            background: #C03550;
+            color: white;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(192, 53, 80, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(192, 53, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(192, 53, 80, 0); }
+        }
     </style>
 </head>
 <body>
@@ -369,6 +401,13 @@
     <div class="stage" id="stage5">
         <div class="letter-scroll" id="letter-box">
             <h2 style="text-align:center; color:var(--accent-red); margin-bottom:30px;">致 我最爱的老婆</h2>
+            <div style="text-align:center; margin-bottom: 30px;">
+                <audio id="voice-player" src="voice.m4a"></audio> 
+                
+                <button onclick="playVoice()" class="voice-btn">
+                    🎙️ 点击播放我的声音
+                </button>
+            </div>
             <div id="letter-content"></div>
             <hr style="margin:40px 0; border:0; border-top:1px dashed #ccc;">
             <div style="text-align:center; color:#888; font-size:0.9rem;">
@@ -388,7 +427,7 @@
             {src:"img5.jpg", text:"生日快乐！！！！", cover: "cover.jpg"}
         ];
 
-        // 信件内容 (已替换为你写的感人版本)
+        // 信件内容
         const letterText = `
             <p>亲爱的张诗悦/妞妞/小松鼠/小蛋糕小朋友：</p>
             <p>生日快乐，mygirl。</p>
@@ -915,6 +954,34 @@
                 }
                 requestAnimationFrame(animate);
             }
+        }
+
+        // --- 新增：语音播放控制 ---
+        function playVoice() {
+            const voice = document.getElementById('voice-player');
+            const bgm = document.getElementById('bgm');
+            const btn = document.querySelector('.voice-btn');
+
+            if (voice.paused) {
+                // 开始播放
+                bgm.pause(); // 暂停背景音乐，怕听不清
+                voice.play();
+                btn.innerHTML = "❚❚ 正在播放..."; // 改变文字
+                btn.classList.add('playing');
+            } else {
+                // 暂停播放
+                voice.pause();
+                bgm.play(); // 恢复背景音乐
+                btn.innerHTML = "▶ 继续播放";
+                btn.classList.remove('playing');
+            }
+
+            // 监听播放结束
+            voice.onended = function() {
+                bgm.play(); // 语音讲完了，背景音乐淡入
+                btn.innerHTML = "🎙️ 再听一遍";
+                btn.classList.remove('playing');
+            };
         }
     </script>
 </body>
