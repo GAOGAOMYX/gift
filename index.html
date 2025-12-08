@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>致我最爱的老婆 ❤️</title>
+    <title>今天是你的专属日子哦老婆~</title>
     <style>
         /* 引入 Google Fonts 高级衬线体 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
 
         :root {
             /* 调色板 */
@@ -63,11 +63,12 @@
         }
         .stage.active { display: flex; opacity: 1; }
 
-        /* --- Stage 1: 礼盒 --- */
+        /* --- Stage 1: 礼盒 (增强交互版) --- */
         .box-container {
             position: relative; width: 220px; height: 220px;
             cursor: pointer; margin-top: 50px;
             perspective: 1000px;
+            transition: transform 0.1s;
         }
         .box-body {
             position: absolute; bottom: 0; width: 100%; height: 75%;
@@ -95,10 +96,24 @@
             border-radius: 50%;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .shake { animation: shake-anim 0.5s ease-in-out; }
-        .open .box-lid { transform: rotateX(120deg) translateY(-150px) scale(0.9); opacity: 0; }
         
-        @keyframes shake-anim { 0%,100%{transform:rotate(0);} 25%{transform:rotate(-3deg);} 75%{transform:rotate(3deg);} }
+        /* 不同的晃动动画 */
+        .shake-mild { animation: shake-mild 0.5s ease-in-out; }
+        .shake-hard { animation: shake-hard 0.5s ease-in-out; }
+        .jump { animation: jump 0.5s ease-in-out; }
+        .wobble { animation: wobble 0.5s ease-in-out; }
+        .open .box-lid { transform: rotateX(120deg) translateY(-300px) scale(0.9); opacity: 0; }
+        
+        @keyframes shake-mild { 0%,100%{transform:rotate(0);} 25%{transform:rotate(-3deg);} 75%{transform:rotate(3deg);} }
+        @keyframes shake-hard { 0%,100%{transform:rotate(0) scale(1);} 25%{transform:rotate(-8deg) scale(1.05);} 75%{transform:rotate(8deg) scale(1.05);} }
+        @keyframes jump { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-30px) scale(1.1);} }
+        @keyframes wobble { 0%,100%{transform:translateX(0%);} 15%{transform:translateX(-15%) rotate(-5deg);} 30%{transform:translateX(10%) rotate(3deg);} 45%{transform:translateX(-10%) rotate(-3deg);} 60%{transform:translateX(5%) rotate(2deg);} 75%{transform:translateX(-5%) rotate(-1deg);} }
+
+        /* 提示文字样式 */
+        #box-tip {
+            margin-top: 60px; color: #999; font-size: 1rem; letter-spacing: 2px;
+            transition: all 0.3s; height: 30px;
+        }
 
         /* --- Stage 2: 草莓 --- */
         .strawberry-item {
@@ -226,7 +241,7 @@
         }
         .elegant-btn {
             background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
-            color: rgba(255,255,255,0.9); padding: 14px 45px; border-radius: 50px;
+            color: rgba(255,255,255,0.9); padding: 12px 45px; border-radius: 50px;
             font-size: 1.1rem; font-family: 'Noto Serif SC', serif; letter-spacing: 3px;
             cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s;
             pointer-events: auto; box-shadow: 0 0 20px rgba(255,255,255,0.1);
@@ -273,6 +288,15 @@
             80% { transform: translateX(10px) rotate(1deg); }
             100% { bottom: 120vh; transform: translateX(0) rotate(0deg); }
         }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+        /* --- 新增：彩带粒子样式 --- */
+        .confetti-piece {
+            position: fixed;
+            width: 8px; height: 12px;
+            z-index: 9999; /* 确保在最顶层 */
+            pointer-events: none;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -284,17 +308,17 @@
     <canvas id="fireworks-canvas"></canvas>
 
     <div class="stage active" id="stage1">
-        <h1 style="font-size:2rem; margin-bottom:50px; color:var(--accent-red); font-weight:normal; letter-spacing:2px; opacity:0; animation: fadeIn 2s forwards 1s;">亲爱的，生日快乐</h1>
+        <h1 style="font-size:2rem; margin-bottom:50px; color:var(--accent-red); font-weight:normal; letter-spacing:2px; opacity:0; animation: fadeIn 2s forwards 1s;">神秘小盒子耶，老婆快打开它~</h1>
         <div class="box-container" id="gift-box" onclick="clickBox()">
             <div class="box-lid"><div class="ribbon"></div><div class="box-bow"></div></div>
             <div class="box-body"><div class="ribbon"></div></div>
         </div>
-        <p style="margin-top:50px; color:#999; letter-spacing:1px; opacity:0; animation: fadeIn 2s forwards 1.5s;">( 轻触开启礼物 )</p>
+        <p id="box-tip" style="margin-top:50px; color:#999; letter-spacing:1px; opacity:0; animation: fadeIn 2s forwards 1.5s;">( 轻触开启礼物 )</p>
     </div>
 
     <div class="stage" id="stage2">
-        <h2 style="color:#555; font-weight:normal;">好像少了点什么...</h2>
-        <p style="color:#888; margin-bottom:40px;">收集 5 颗草莓装饰蛋糕 🍓</p>
+        <h2 style="color:#555; font-weight:normal;">咦？奇怪怎么木有蛋糕糕，听说收集4个小草莓就可以召唤蛋糕哦</h2>
+        <p id="berry-msg" style="color:#888; margin-bottom:40px;">让我们一起收集小草莓召唤蛋糕糕吧。 🍓</p>
         <div style="width:100%; height:60vh; position:relative;" id="berry-area"></div>
         <div id="score" style="color:var(--accent-red); font-size:1.5rem;">0 / 5</div>
     </div>
@@ -315,12 +339,12 @@
         </div>
         
         <div id="hint-text" style="text-align:center; color:#C03550; font-size:1.2rem; opacity:0; transition:opacity 1s; z-index:20;">
-            蛋糕做好啦<br><span style="font-size:0.9rem; color:#888;">点击蜡烛点亮它 🕯️</span>
+            小奶糕来给你送蛋糕咯<br><span style="font-size:0.9rem; color:#888;">点击蜡烛点亮它 🕯️</span>
         </div>
         
         <div id="blow-btn" style="margin-top:30px; opacity:0; transition:opacity 1s; pointer-events:none; z-index:20;">
             <button onclick="blowOut()" class="elegant-btn" style="color:#C03550; border-color:rgba(192, 53, 80, 0.3); background:rgba(255,255,255,0.6);">
-                💨 吹灭许愿
+                💨 吹灭许愿 （是真的可以吹的哦宝宝 呼呼呼~）
             </button>
         </div>
     </div>
@@ -331,9 +355,9 @@
     <div id="lantern-container"></div>
     
     <div id="control-bar">
-        <p id="star-msg" style="color:rgba(255,255,255,0.7); margin-bottom:25px; letter-spacing:2px;">愿望已化作漫天星辰</p>
+        <p id="star-msg" style="color:rgba(255,255,255,0.7); margin-bottom:25px; letter-spacing:2px;">老婆天天开心，心想事成哦，愿望都会实现哒~</p>
         <button id="photo-btn" class="elegant-btn" onclick="showLanterns()">✨ 点击漂浮的回忆 ✨</button>
-        <button id="read-letter-btn" class="elegant-btn" style="display:none;" onclick="revealLetter()">亲启信件 💌</button>
+        <button id="read-letter-btn" class="elegant-btn" style="display:none;" onclick="revealLetter()">打开信件 💌</button>
     </div>
 
     <div class="modal" id="modal" onclick="closeModal()">
@@ -357,22 +381,46 @@
     <script>
         // === 1. 数据配置 ===
         const photos = [
-            {src:"img1.jpg", text:"初次相遇"},
-            {src:"img2.jpg", text:"你笑起来真好看"},
-            {src:"img3.jpg", text:"旅行的意义"},
-            {src:"img1.jpg", text:"平凡的幸福"},
-            {src:"img2.jpg", text:"生日快乐"}
+            {src:"img1.jpg", text:"我们的第一次旅行"},
+            {src:"img2.jpg", text:"老婆我们一起去见到了你的童年偶像哦"},
+            {src:"img3.jpg", text:"我们最开心的一次旅行！"},
+            {src:"img4.jpg", text:"最平凡的幸福嘿嘿，有你真好老婆"},
+            {src:"img5.jpg", text:"生日快乐！！！！"}
         ];
 
+        // 信件内容 (已替换为你写的感人版本)
         const letterText = `
-            <p>亲爱的老婆：</p>
-            <p>生日快乐！</p>
-            <p>今天是你特别的日子。我想把天上的星星、最好吃的蛋糕、还有我们所有的美好回忆都送给你。</p>
-            <p>刚才那颗升起的愿望球，代表着我会永远守护你的梦想。漫天的烟花，是我为你许下的心愿。</p>
-            <p>谢谢你出现在我的生命里，让平淡的日子变得闪闪发光。</p>
-            <p>无论未来如何，我都会一直牵着你的手，陪你走过每一个春夏秋冬。</p>
-            <p>我爱你，不止今天，而是永远。</p>
-            <p style="text-align:right; margin-top:40px;">—— 爱你的老公</p>
+            <p>亲爱的张诗悦/妞妞/小松鼠/小蛋糕小朋友：</p>
+            <p>生日快乐，mygirl。</p>
+            
+            <p>这是我们一起度过的第二个生日，虽然我们之间隔着距离，但我知道，这份想念和爱意比去年更浓，也比任何实体礼物都更沉甸甸地装在我的心底。</p>
+            
+            <p>我一直都对我们相遇的那个瞬间记忆犹新。在尘土飞扬的历史课上，我顶着一头“爆炸头”坐到了老婆的身边。那个画面在我脑海里永远都是定格的：你安静地低头看着手机，然后时不时的看看老师，那一抹头顶的光线勾勒出了老婆全世界最好看的侧颜。好米好米好米呀，我现在都还会在脑海中回忆那个戴着口罩的神级侧脸。那是两年前，一个平凡不过的下午，但是却开启了我生命中最不平凡的一段旅程。遇到了我这一辈子最想最想厮守的宝宝。</p>
+            
+            <p>这两年的时间里，我从你的身上看到了好多好多让我敬佩和沉醉的光芒。我有很多的错，以及我们之间也发生了好多好多的冲突，但是无论最后发生什么，我们都还是会因为爱，而坚定的选择对方。</p>
+            
+            <p>你是我见过最善良的女孩，总是在不经意间对这个世界温柔以待，非常的有自己的思想，我超级喜欢这样的你。同时，你又有着惊人的坚韧，面对生活里的挑战，你总是默默消化，然后更强大地站起来。（虽然有的挑战是我搞出来嘟），我觉得发生了这些事情的时候是你最迷人时刻之一，因为你经常会像一个小孩子一样和我倾诉，我真的好喜欢好喜欢这样的你，嘿嘿很有被认同的感觉。</p>
+            
+            <p>虽然你会很慌乱很焦灼，有时候也会对着我撒脾气。但是你却也总是能一一化解。并且傲娇的和我说对不起，好可爱好可爱的，嘿嘿。傲娇小黑猫。老婆我想说你真的很棒呀宝宝，有的时候也会怕我担心而不和我说，但是哦宝宝，我这一辈子都要给你，所以无论你说什么我都不会有意见，我都还是会一直一样的对待你爱你。帮你排忧解难是我最最想要做的事情啦。能拥有你这样的灵魂伴侣，是我这辈子最幸运的事。</p>
+            
+            <p>当然，最让我心动的是，你那份毫不保留地爱着我的心意，这份爱给了我穿越一切距离和困难的勇气。老婆，我要向你保证，只要你一回头，我永远都在，为你排忧解难，为你做任何事情都愿意。我爱你老婆。</p>
+
+            <p>我知道，这段时间异地恋很辛苦，你都很坚强的挺了过来，我知道你只是傲娇，你在不管有多忙的时候，都会想老公的对不对呀。此刻我所有对你的思念，都会化作日后加倍的拥抱和陪伴。异地恋总是充满了数不清楚的小遗憾，但是呐这些小小的遗憾，是为了让我们在未来重聚时，能拥有最热烈、最没有拘束的庆祝。我要狠狠的抱你亲你。现在有多想你，到时候就要亲的有多凶！（还有 6 天就要回来了哦）(˘³˘)💕</p>
+
+            <p>老婆～你最近画的不管是系列插画还是绘本都是真的太棒了，我真的真的好欣赏你的作品哦老婆，它们跟你本人一样，带着一股温暖又治愈的力量。看到你用自己的热爱去创造美。我就会不由自主的去喜欢你产出的一切，很喜欢很喜欢。</p>
+
+            <p>下面我要认真 lu：<br>在我眼里你永远都是最闪耀的存在，愿你的光芒更盛，愿你的梦想更近。<br>请你相信，所有的等待都是值得的。等你来了，等我们结束这段“异地课”。这一定是我们最后一次异地了。呜呜😭</p>
+
+            <p>在接下来的日子里，我想和你做更多事情：一起去玩好多好多的迪，一起去尝试我们没能一起去看的那些城市风景或者海边风景，一起… 好好地生活在一起。</p>
+
+            <p>老婆希望你能感受到我的真心，因为我知道我平时时不时的会让你感到有些冷淡，是我自己的性格问题，但是我的内心从未变化，永远都会和以前一样的爱你，无时无刻的都在想着你老婆。想要和你有未来，想要给你一个你可以无忧无虑的释放自己的脾气，天性，快乐的一个属于我们俩的小家，我是园丁，你是校花，我要好好的照顾，你这朵花花，你也同时散发着迷人的香味，来治愈我，我的小天使，爱你哦。</p>
+
+            <p>最后生日快乐，我最爱、最想念，在我的世界最耀眼的女孩。以后我要和你一起度过无数个生日的瞬间，一直到老。我爱你。</p>
+
+            <p style="text-align:right; margin-top:50px;">
+                永远爱你的，<br>
+                老公/大熊熊/卤蛋/小奶糕/<br>一直都对你充满感觉的小骚狗狗/高骛远
+            </p>
         `;
 
         // === 2. 逻辑控制 ===
@@ -409,73 +457,193 @@
             }, 2500);
         }
 
-        // --- Stage 1 ---
+        // --- Stage 1: 礼盒 (惊喜吊胃口) ---
+        const tips = [
+            "咦？盒子好像被魔法锁住了...", 
+            "再用力一点点！💪", 
+            "听！里面好像有心跳声... 💓", 
+            "哇！封印松动了！准备好了吗？✨"
+        ];
+
         function clickBox() {
             if(clickCount===0) bgm.play().catch(()=>{});
             const box = document.getElementById('gift-box');
-            clickCount++;
-            box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+            const tipText = document.getElementById('box-tip');
             
-            if(clickCount === 4) {
+            // 重置动画
+            box.classList.remove('shake', 'shake-mild', 'shake-hard', 'wobble');
+            void box.offsetWidth; 
+
+            if(clickCount < 4) {
+                // 不同的晃动
+                if(clickCount === 0) box.classList.add('shake-mild');
+                if(clickCount === 1) box.classList.add('shake-hard');
+                if(clickCount === 2) box.classList.add('wobble');
+                if(clickCount === 3) box.classList.add('shake-hard');
+                
+                // 更新文字
+                tipText.innerText = tips[clickCount];
+                tipText.style.color = "#D64161";
+                tipText.style.transform = "scale(1.1)";
+                setTimeout(()=> tipText.style.transform = "scale(1)", 200);
+                
+                clickCount++;
+            } else {
                 box.classList.add('open');
+                fireConfetti(); //
+                tipText.innerText = "生日快乐！🎉";
                 setTimeout(() => switchStage('stage1', 'stage2', initBerries), 2000);
             }
         }
 
-        // --- Stage 2 ---
+        // --- Stage 2: 找草莓 (4真4假·强制跳转版) ---
         function initBerries() {
-            const area = document.getElementById('berry-area');
-            const score = document.getElementById('score');
-            
-            for(let i=0; i<5; i++) {
-                const b = document.createElement('div');
-                b.className = 'strawberry-item'; b.innerHTML = '🍓';
-                b.style.left = (10 + Math.random()*80) + '%';
-                b.style.top = (10 + Math.random()*80) + '%';
-                b.style.animationDelay = Math.random() + 's';
-                b.onclick = function() {
-                    this.style.transform = "scale(1.5) rotate(20deg)"; this.style.opacity = 0;
-                    setTimeout(() => this.remove(), 500);
-                    berryScore++;
-                    score.innerText = berryScore + " / 5";
-                    if(berryScore === 5) setTimeout(() => switchStage('stage2', 'stage3', initCake), 1500);
-                }
-                area.appendChild(b);
-            }
-        }
+            console.log("Stage 2 初始化启动..."); // 调试日志
 
-        // --- Stage 3 ---
-        function initCake() {
-            setTimeout(() => {
-                document.getElementById('cake-model').classList.add('visible');
-                document.getElementById('hint-text').style.opacity = 1;
-                // 绑定点击：确保是 main-candle
-                document.getElementById('main-candle').onclick = lightCandle;
-                // 蜡烛长高
-                document.getElementById('main-candle').style.height = "60px";
+            // 1. 获取元素
+            const area = document.getElementById('berry-area');
+            const scoreEl = document.getElementById('score');
+            const msg = document.getElementById('berry-msg'); 
+            
+            // 2. 重置数据
+            if(area) area.innerHTML = ''; 
+            berryScore = 0; // 全局变量重置
+            if(scoreEl) scoreEl.innerText = "0 / 4"; 
+
+            // 3. 定义数据：4真 4假 (全部显示为草莓)
+            let items = [
+                {type: 'real', id: 1}, {type: 'real', id: 2}, 
+                {type: 'real', id: 3}, {type: 'real', id: 4},
+                {type: 'fake', id: 5}, {type: 'fake', id: 6}, 
+                {type: 'fake', id: 7}, {type: 'fake', id: 8}
+            ];
+
+            // 4. 洗牌
+            items.sort(() => Math.random() - 0.5);
+
+            // 5. 生成元素
+            items.forEach((item) => {
+                const b = document.createElement('div');
+                b.className = 'strawberry-item'; 
+                b.innerHTML = '🍓'; // 无论真假，外观一样
                 
-                // 草莓入场
+                // 随机位置
+                b.style.left = (10 + Math.random() * 80) + '%';
+                b.style.top = (10 + Math.random() * 80) + '%';
+                b.style.animationDelay = Math.random() + 's'; 
+
+                // 6. 点击事件
+                b.onclick = function() {
+                    // 锁定点击，防止连点
+                    this.style.pointerEvents = 'none';
+
+                    if (item.type === 'real') {
+                        // --- 点到【真草莓】 ---
+                        console.log("点到了真草莓！当前分数：" + (berryScore + 1));
+                        
+                        // 动画
+                        this.style.transform = "scale(1.5) rotate(20deg)";
+                        this.style.opacity = 0;
+                        setTimeout(() => this.remove(), 500);
+
+                        // 计分
+                        berryScore++;
+                        if(scoreEl) scoreEl.innerText = berryScore + " / 4";
+                        
+                        // 提示语
+                        if(msg) msg.innerText = "哇！是甜的！(还差" + (4 - berryScore) + "个)";
+
+                        // 【关键跳转点】
+                        if (berryScore === 4) {
+                            console.log("✅ 收集完成！尝试跳转...");
+                            if(msg) msg.innerText = "集齐啦！召唤蛋糕！🎂";
+                            
+                            // 强制延时跳转
+                            setTimeout(() => {
+                                console.log("🚀 执行 switchStage...");
+                                // 确保函数存在再调用，防止报错
+                                if (typeof switchStage === "function") {
+                                    switchStage('stage2', 'stage3', initCake);
+                                } else {
+                                    alert("错误：switchStage 函数未找到，请检查代码！");
+                                }
+                            }, 1500);
+                        }
+
+                    } else {
+                        // --- 点到【假草莓】 ---
+                        console.log("点到了假草莓...");
+                        
+                        // 动画：缩小消失
+                        this.style.transform = "scale(0.5)";
+                        this.style.opacity = 0;
+                        setTimeout(() => this.remove(), 500);
+
+                        // 提示语
+                        if(msg) {
+                            const jokes = ["哎呀！这颗是酸的😝", "还没熟透呢🌿", "这颗不好吃🙅‍♂️"];
+                            msg.innerText = jokes[Math.floor(Math.random() * jokes.length)];
+                            msg.style.color = "#888";
+                            setTimeout(() => { 
+                                if(berryScore < 4) {
+                                    msg.innerText = "再找找甜的草莓... 🍓";
+                                    msg.style.color = "#888";
+                                }
+                            }, 1000);
+                        }
+                    }
+                }
+                if(area) area.appendChild(b);
+            });
+        }
+        // --- Stage 3: 蛋糕逻辑 (补全这部分！) ---
+        function initCake() {
+            console.log("Stage 3 蛋糕模式启动...");
+            setTimeout(() => {
+                // 显示蛋糕主体
+                const cake = document.getElementById('cake-model');
+                if(cake) cake.classList.add('visible');
+                
+                // 显示提示字
+                const hint = document.getElementById('hint-text');
+                if(hint) hint.style.opacity = 1;
+                
+                // 让蜡烛长出来
+                const candle = document.getElementById('main-candle');
+                if(candle) {
+                    candle.style.height = "60px";
+                    // 绑定点火事件
+                    candle.onclick = lightCandle;
+                }
+                
+                // 让草莓显示出来
                 document.querySelectorAll('.c-berry').forEach(b => b.style.opacity = 1);
             }, 500);
         }
 
         function lightCandle() {
             const flame = document.getElementById('main-flame');
+            // 防止重复点击
             if(flame.classList.contains('active')) return;
             
             // 点亮火苗
             flame.classList.add('active');
             
+            // 背景变暗，开灯光
             document.body.style.backgroundColor = "#1a1a1a"; 
             document.getElementById('glow').style.opacity = 1;
             
+            // 提示吹气
             document.getElementById('hint-text').innerHTML = "现在，闭上眼许个愿...<br><span style='font-size:0.9rem;opacity:0.8'>然后吹灭它</span>";
-            const btn = document.getElementById('blow-btn');
-            btn.style.opacity = 1; btn.style.pointerEvents = "all";
             
+            // 显示吹气按钮
+            const btn = document.getElementById('blow-btn');
+            btn.style.opacity = 1; 
+            btn.style.pointerEvents = "all";
+            
+            // 启动麦克风监听
             initMic();
         }
-
         function blowOut() {
             const flame = document.getElementById('main-flame');
             if(!flame.classList.contains('active')) return;
@@ -533,21 +701,40 @@
         }
 
         function createFireworks(x, y) {
-            // Heart (Ruby Red, Denser)
+            const colors = ['#E85A7C', '#FFD700', '#FFF'];
+            
+            // --- 1. 完美的红色爱心 ---
             for(let i=0; i<120; i++) {
                 const t = (Math.PI*2*i)/120;
+                // 爱心方程
                 const dx = 16 * Math.pow(Math.sin(t), 3);
                 const dy = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                particles.push(new Particle(x + dx*6, y + dy*6, 0, 0, '#E0115F', true)); // True for trail
+                // 放大系数 5.5，位置居中
+                particles.push(new Particle(x + dx*5.5, y + dy*5.5 - 20, 0, 0, '#D32F2F', true));
             }
             
             const gold = '#FFD700';
-            // X (Rigid shape)
-            const gx = x - 140;
-            for(let i=0; i<=40; i++) {
-                let d = i*2; // 0 to 80
-                particles.push(new Particle(gx-40+d, y-40+d, 0, 0, gold, true)); // \
-                particles.push(new Particle(gx-40+d, y+40-d, 0, 0, gold, true)); // /
+            
+            // --- 2. 金色 X (左侧) ---
+            // 采用双线交叉法，确保笔直
+            const cxX = x - 140; // X的中心X坐标
+            const size = 35;     // 大小
+            
+            // 第一笔：左上 -> 右下 (\)
+            for(let i=0; i<=20; i++) {
+                let progress = i/20; 
+                // 从 (cxX-size, y-size) 到 (cxX+size, y+size)
+                let px = (cxX - size) + (progress * size * 2);
+                let py = (y - size) + (progress * size * 2);
+                particles.push(new Particle(px, py, 0, 0, gold, true));
+            }
+            // 第二笔：右上 -> 左下 (/)
+            for(let i=0; i<=20; i++) {
+                let progress = i/20;
+                // 从 (cxX+size, y-size) 到 (cxX-size, y+size)
+                let px = (cxX + size) - (progress * size * 2);
+                let py = (y - size) + (progress * size * 2);
+                particles.push(new Particle(px, py, 0, 0, gold, true));
             }
             
             // S (Rigid shape using arcs)
@@ -563,16 +750,18 @@
                 particles.push(new Particle(sx + 30*Math.cos(a), (y+30) + 30*Math.sin(a), 0,0, gold, true));
             }
 
-            // Explosion Filler Particles
-            for(let i=0; i<50; i++) {
-                const a = Math.random()*Math.PI*2; const v = Math.random()*4;
+            // --- 4. 爆炸氛围粒子 (减少数量，只做点缀) ---
+            for(let i=0; i<60; i++) {
+                const a = Math.random()*Math.PI*2; 
+                const v = Math.random()*3 + 1;
                 particles.push(new Particle(x, y, Math.cos(a)*v, Math.sin(a)*v, gold, true));
             }
 
+            // 5秒后显示按钮
             setTimeout(() => {
                 const bar = document.getElementById('control-bar');
                 bar.style.opacity = 1; bar.style.pointerEvents = "all";
-            }, 6000);
+            }, 5000);
         }
 
         class Particle {
@@ -593,7 +782,6 @@
                 this.alpha -= 0.004; // Slow fade
             }
             draw(ctx) {
-                // Draw trail
                 if(this.useTrail) {
                     ctx.beginPath();
                     for(let i=0; i<this.trail.length; i++) {
@@ -604,7 +792,6 @@
                         ctx.fill();
                     }
                 }
-                // Draw main particle
                 ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill();
             }
@@ -612,7 +799,6 @@
 
         function updateParticles() {
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            // Draw particles in reverse to handle transparency better
             for(let i=particles.length-1; i>=0; i--) {
                 particles[i].update(); particles[i].draw(ctx);
                 if(particles[i].alpha <= 0) particles.splice(i, 1);
@@ -650,7 +836,7 @@
         
         function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-        // --- 信件 (修复) ---
+        // --- 信件 ---
         function revealLetter() {
             switchStage(null, 'stage5', () => {
                 document.body.style.backgroundColor = "var(--bg-paper)";
@@ -666,13 +852,70 @@
             });
         }
 
-        function startTimer(){ setInterval(() => { const diff = new Date("2025-12-09T00:00:00") - new Date(); if(diff<0) return; const d = Math.floor(diff/(1000*60*60*24)); const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)); document.getElementById('timer').innerText = `${d}天 ${h}小时`; }, 1000); }
+        function startTimer(){ setInterval(() => { const diff = new Date("2026-12-09T00:00:00") - new Date(); if(diff<0) return; const d = Math.floor(diff/(1000*60*60*24)); const h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)); document.getElementById('timer').innerText = `${d}天 ${h}小时`; }, 1000); }
         function initMic() { if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => { const ctx = new AudioContext(); const ana = ctx.createAnalyser(); const src = ctx.createMediaStreamSource(stream); src.connect(ana); const data = new Uint8Array(ana.frequencyBinCount); function loop(){ ana.getByteFrequencyData(data); let s=0; data.forEach(v=>s+=v); if(s/data.length>30) blowOut(); else requestAnimationFrame(loop); } loop(); }).catch(()=>{}); } }
         function toggleMusic(){bgm.paused?bgm.play():bgm.pause();}
         
+        // CSS Animation styles appended for extra keyframes
         const style = document.createElement('style');
-        style.innerHTML = `@keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} } @keyframes shootingStar { 0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; } 100% { transform: translateX(-500px) translateY(500px) rotate(-45deg); opacity: 0; } }`;
+        style.innerHTML = `
+            @keyframes shake-mild { 0%,100%{transform:rotate(0);} 25%{transform:rotate(-3deg);} 75%{transform:rotate(3deg);} }
+            @keyframes shake-hard { 0%,100%{transform:rotate(0) scale(1);} 25%{transform:rotate(-8deg) scale(1.05);} 75%{transform:rotate(8deg) scale(1.05);} }
+            @keyframes jump { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-30px) scale(1.1);} }
+            @keyframes wobble { 0%,100%{transform:translateX(0%);} 15%{transform:translateX(-15%) rotate(-5deg);} 30%{transform:translateX(10%) rotate(3deg);} 45%{transform:translateX(-10%) rotate(-3deg);} 60%{transform:translateX(5%) rotate(2deg);} 75%{transform:translateX(-5%) rotate(-1deg);} }
+            @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} } 
+            @keyframes shootingStar { 0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; } 100% { transform: translateX(-500px) translateY(500px) rotate(-45deg); opacity: 0; } }
+        `;
         document.head.appendChild(style);
+
+        // === 新增：彩带爆炸函数 ===
+        function fireConfetti() {
+            const colors = ['#FFD700', '#C03550', '#FF9AA2', '#FFFFFF', '#FFB7B2']; // 金、红、粉、白
+            const count = 150; // 粒子数量，越多越震撼
+            const box = document.getElementById('gift-box').getBoundingClientRect();
+            // 从盒子中心炸开
+            const centerX = box.left + box.width / 2;
+            const centerY = box.top + box.height / 2;
+
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.classList.add('confetti-piece');
+                el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                el.style.left = centerX + 'px';
+                el.style.top = centerY + 'px';
+                document.body.appendChild(el);
+
+                // 物理参数：随机角度、速度、重力
+                const angle = Math.random() * Math.PI * 2;
+                // 向上喷射的力量更大
+                const velocity = 10 + Math.random() * 15; 
+                let vx = Math.cos(angle) * velocity;
+                let vy = Math.sin(angle) * velocity - 12; // 初始向上的冲力
+                let rotation = Math.random() * 360;
+                let rotationSpeed = (Math.random() - 0.5) * 10;
+
+                function animate() {
+                    vx *= 0.95; // 空气阻力
+                    vy += 0.8;  // 重力下坠
+                    rotation += rotationSpeed;
+
+                    const currentLeft = parseFloat(el.style.left);
+                    const currentTop = parseFloat(el.style.top);
+
+                    el.style.left = (currentLeft + vx) + 'px';
+                    el.style.top = (currentTop + vy) + 'px';
+                    el.style.transform = `rotate(${rotation}deg)`;
+
+                    // 如果掉出屏幕下方，就移除
+                    if (currentTop < window.innerHeight) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        el.remove();
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+        }
     </script>
 </body>
 </html>
