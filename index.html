@@ -385,7 +385,7 @@
             {src:"img2.jpg", text:"老婆我们一起去见到了你的童年偶像哦"},
             {src:"img3.jpg", text:"我们最开心的一次旅行！"},
             {src:"img4.jpg", text:"最平凡的幸福嘿嘿，有你真好老婆"},
-            {src:"img5.jpg", text:"生日快乐！！！！"}
+            {src:"img5.jpg", text:"生日快乐！！！！", cover: "cover.jpg"}
         ];
 
         // 信件内容 (已替换为你写的感人版本)
@@ -816,7 +816,7 @@
             photos.forEach((p, i) => {
                 const div = document.createElement('div');
                 div.className = 'lantern';
-                div.innerHTML = `<img src="${p.src}">`;
+                div.innerHTML = `<img src="${p.cover || p.src}">`;
                 div.style.left = (15 + Math.random()*70) + '%';
                 div.style.animationDuration = (20 + Math.random()*10) + 's';
                 div.style.animationDelay = (i * 2) + 's';
